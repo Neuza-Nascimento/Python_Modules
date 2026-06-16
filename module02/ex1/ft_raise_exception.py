@@ -1,12 +1,17 @@
 #!/usr/bin/python3
 
 def input_temperature(temp_str: str) -> int:
-    return int(temp_str)
+    temp: int = int(temp_str)
+    if temp > 40:
+        raise ValueError(f"{temp}°C is too hot for plants (max 40°C)")
+    if temp < 0:
+        raise ValueError(f"{temp}°C is too cold for plants (min 0°C)")
+    return temp
 
 
 def test_temperature() -> None:
-    print("=== Garden Temperature ===\n")
-    inputs = ["123", "abc"]
+    print("=== Garden Temperature Checker ==\n")
+    inputs = ["25", "abc", "100", "-50"]
     for input in inputs:
         try:
             print(f"Input data is '{input}'")
@@ -17,9 +22,5 @@ def test_temperature() -> None:
     print("All tests completed - program didn't crash!")
 
 
-def main() -> None:
-    test_temperature()
-
-
 if __name__ == "__main__":
-    main()
+    test_temperature()
