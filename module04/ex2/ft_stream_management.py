@@ -3,7 +3,8 @@
 import sys
 
 
-def cyber_archives_recovery() -> str:
+def cyber_archives_recovery() -> str | None:
+    content = None
     if len(sys.argv) != 2:
         sys.stderr.write(f"\n[STDERR] Usage: {sys.argv[0]} <file>\n")
     else:
@@ -14,13 +15,14 @@ def cyber_archives_recovery() -> str:
             content = file.read()
             sys.stdout.write(f"---\n\n{content}\n\n---")
         except Exception as e:
-            sys.stderr.write(f"[STDERR] Error opening file '{sys.argv[1]}': {e}\n")
+            sys.stderr.write(f"[STDERR] Error opening file"
+                             f"{sys.argv[1]}': {e}\n")
             return None
         finally:
             if file:
                 file.close()
                 sys.stdout.write(f"\nFile '{sys.argv[1]}' closed.\n")
-        return content
+    return content
 
 
 def cyber_archives_recovery_preservation() -> None:
@@ -42,15 +44,16 @@ def cyber_archives_recovery_preservation() -> None:
             file = open(name_file, "w")
             file.write(content)
         except Exception as e:
-            sys.stderr.write(f"[STDERR] Error opening file '{sys.argv[1]}': {e}\n")
+            sys.stderr.write(f"[STDERR] Error opening file "
+                             f"'{name_file}': {e}\n")
             sys.stdout.write("Not saving data.\n")
             return
         sys.stdout.write(f"Data saved in file {name_file}\n")
 
-    
 
 def main() -> None:
     cyber_archives_recovery_preservation()
 
-if __name__== "__main__":
+
+if __name__ == "__main__":
     main()
