@@ -36,8 +36,8 @@ class DataProcessor(ABC):
 
     def __init__(self) -> None:
         super().__init__()
-        self.strings: list = []
-        self.rank: list = []
+        self.strings: list[str] = []
+        self.rank: list[int] = []
         self.count: int = 0
 
     def _store(self, string: str) -> None:
@@ -61,8 +61,7 @@ class NumericProcessor(DataProcessor):
             return all(isinstance(item, (int, float)) for item in data)
         return isinstance(data, (int, float))
 
-    def ingest(self, data: int | float
-               | list[int | float]) -> None:
+    def ingest(self, data: int | float | list[int | float]) -> None:
         if not self.validate(data):
             raise NumericProcessorError("Improper numeric data")
         if isinstance(data, list):
@@ -79,8 +78,7 @@ class TextProcessor(DataProcessor):
             return all(isinstance(item, (str)) for item in data)
         return isinstance(data, (str))
 
-    def ingest(self, data: str
-               | list[str]) -> None:
+    def ingest(self, data: str | list[str]) -> None:
         if not self.validate(data):
             raise TextProcessorError("Improper text data")
         if isinstance(data, list):
@@ -97,67 +95,89 @@ class LogProcessor(DataProcessor):
                 isinstance(item, dict)
                 and all(
                     isinstance((key), (str)) and isinstance((value), (str))
-                    for key, value in item.items())
-                for item in data)
+                    for key, value in item.items()
+                )
+                for item in data
+            )
         return isinstance(data, dict) and all(
-                isinstance((key), (str)) and isinstance((value), (str))
-                for key, value in data.items())
+            isinstance((key), (str)) and isinstance((value), (str))
+            for key, value in data.items()
+        )
 
-    def ingest(self, data: dict[str, str]
-               | list[dict[str, str]]) -> None:
+    def ingest(self, data: dict[str, str] | list[dict[str, str]]) -> None:
         if not self.validate(data):
             raise LogProcessorError("Improper log data")
         if isinstance(data, list):
             for value in data:
-                self._store(f"{value['log_level'].strip()}"
-                            f": {value['log_message'].strip()}")
+                self._store(
+                    f"{value['log_level'].strip()}"
+                    f": {value['log_message'].strip()}"
+                )
         else:
-            self._store(f"{data['log_level'].strip()}"
-                        f": {data['log_message'].strip()}")
+            self._store(
+                f"{data['log_level'].strip()}"
+                f": {data['log_message'].strip()}"
+            )
 
+
+class ExportPlugin(typing.Protocol):
+    def process_output(self, data: list[tuple[int, str]]) -> None:
+        pass
+
+
+class DataStream:
+    def __init__(self) -> None:
+        self.procs: list[DataProcessor] = []
+
+    def register_processor(self, proc: DataProcessor) -> None:
+        self.procs.append(proc)
+
+    def process_stream(self, stream: list[typing.Any]) -> None:
+        for element in stream:
+            isProc = False
+            for proc in self.procs:
+                if proc.validate(element):
+                    proc.ingest(element)
+                    isProc = True
+                    break
+            if not isProc:
+                print(
+                    "DataStream error - Can't process element in stream: "
+                    f"{element}"
+                )
+
+    def print_processors_stats(self) -> None:
+        print("== DataStream statistics ==")
+        if len(self.procs) == 0:
+            print("No processor found, no data")
+        else:
+            for proc in self.procs:
+                name = proc.__class__.__name__
+                name.replace("Processor", " Processor")
+                print(
+                    f"{name}: "
+                    f"total {proc.count} items processed,"
+                    f"remaining {len(proc.strings)} on processor"
+                )
+
+
+    def output_pipeline(self, nb: int, plugin: ExportPlugin) -> None:
+        data = []
+        for proc in self.procs:
+            for i in range(nb):
+                try:
+                    data.append(proc.output())
+                except IndexError as e:
+                     print(f"{e}")
+                     break
+        plugin.process_output(data)
+
+
+class CsvExportPlugin:
+    
 
 def main() -> None:
-    print("=== Code Nexus - Data Processor ===\n")
-
-    np = NumericProcessor()
-    print("Testing Numeric Processor...")
-    print(f"Trying to validate input '42': {np.validate(42)}")
-    print(f"Trying to validate input 'Hello': {np.validate('Hello')}")
-    print("Test invalid ingestion of string 'foo' without prior validation:")
-    try:
-        np.validate("foo")
-    except DataProcessorError as e:
-        print(f"Got exception: {e}")
-    dataNums: list[int | float] = [1, 2, 3, 4, 5]
-    print(f"Processing data: {dataNums}")
-    print("Extracting 3 values...")
-    np.ingest(dataNums)
-    for _ in range(0, 3):
-        rank, value = np.output()
-        print(f"Numeric value {rank}: {value}")
-    print()
-    print("Testing Text Processor...")
-    tp = TextProcessor()
-    print(f"Trying to validate input '42': {tp.validate(42)}")
-    dataText: list[str] = ['Hello', 'Nexus', 'Word']
-    print(f"Processing data: {dataText}")
-    print("Extracting 1 values...")
-    tp.ingest(dataText)
-    rank, value = tp.output()
-    print(f"Text value {rank}: {value}")
-    print()
-    print("Testing Log Processor...")
-    lp = LogProcessor()
-    print(f"Trying to validate input 'Hello': {lp.validate('Hello')}")
-    dataLog: list[dict] = [
-        {'log_level': 'NOTICE', 'log_message': 'Connection to server'},
-        {'log_level': 'ERROR', 'log_message': 'Unauthorized access!!'}]
-    print(f"Processing data: {dataLog}")
-    print("Extracting 2 values...")
-    lp.ingest(dataLog)
-    for _ in range(0, 2):
-        rank, value = lp.output()
-        print(f"Log value {rank}: {value}")
+    print("=== Code Nexus - Data Pipeline ===\n")
 
 
 if __name__ == "__main__":
