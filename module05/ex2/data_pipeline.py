@@ -47,7 +47,7 @@ class DataProcessor(ABC):
 
     def output(self) -> tuple[int, str]:
         if len(self.strings) == 0:
-            raise IndexError("error")
+            raise IndexError("Error")
         else:
             rank: int = self.rank.pop(0)
             sentence: str = self.strings.pop(0)
@@ -160,24 +160,81 @@ class DataStream:
                     f"remaining {len(proc.strings)} on processor"
                 )
 
-
     def output_pipeline(self, nb: int, plugin: ExportPlugin) -> None:
-        data = []
         for proc in self.procs:
+            data = []
             for i in range(nb):
                 try:
                     data.append(proc.output())
-                except IndexError as e:
-                     print(f"{e}")
-                     break
-        plugin.process_output(data)
+                except IndexError:
+                    break
+            plugin.process_output(data)
 
 
 class CsvExportPlugin:
-    
+    def process_output(self, data: list[tuple[int, str]]) -> None:
+        values = [value for _, value in data]
+        print(f"CSV Output: \n{','.join(values)}")
+
+
+class JsonExportPlugin:
+    def process_output(self, data: list[tuple[int, str]]) -> None:
+        values = [f'"item_{index}": "{value}"' for index, value in data]
+        print(f'JSON Output: \n {{{", ".join(values)}}}')
+
 
 def main() -> None:
     print("=== Code Nexus - Data Pipeline ===\n")
+    print("Initialize Data Stream...\n")
+    stream = DataStream()
+    stream.print_processors_stats()
+
+    print("\nRegistering Processors\n")
+    np = NumericProcessor()
+    tp = TextProcessor()
+    lp = LogProcessor()
+    stream.register_processor(np)
+    stream.register_processor(tp)
+    stream.register_processor(lp)
+    dataStream: list[typing.Any] = [
+        "Hello world",
+        [3.14, -1, 2.71],
+        [
+            {
+                "log_level": "WARNING",
+                "log_message": "Telnet access! Use ssh instead",
+            },
+            {"log_level": "INFO", "log_message": "User wil isconnected"},
+        ],
+        42,
+        ["Hi", "five"],
+    ]
+    print(f"Send first batch of data on stream: {dataStream}\n")
+    stream.process_stream(dataStream)
+    stream.print_processors_stats()
+    print("\nSend 3 processed data from each processor to a CSV plugin:")
+    stream.output_pipeline(3, CsvExportPlugin())
+    print()
+    stream.print_processors_stats()
+    dataStream2: list[typing.Any] = [
+        21,
+        ["I love AI", "LLMs are wonderful", "Stay healthy"],
+        [
+            {"log_level": "ERROR", "log_message": "500 server crash"},
+            {
+                "log_level": "NOTICE",
+                "log_message": "Certificate expires in 10 days",
+            },
+        ],
+        [32, 42, 64, 84, 128, 168],
+        "World hello",
+    ]
+    print(f"\nSend another batch of data: {dataStream2}")
+    stream.process_stream(dataStream2)
+    print("\nSend 5 processed data from each processor to a JSON plugin:")
+    stream.output_pipeline(5, JsonExportPlugin())
+    print()
+    stream.print_processors_stats()
 
 
 if __name__ == "__main__":

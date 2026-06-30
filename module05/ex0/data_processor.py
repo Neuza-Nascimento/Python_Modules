@@ -36,8 +36,8 @@ class DataProcessor(ABC):
 
     def __init__(self) -> None:
         super().__init__()
-        self.strings: list = []
-        self.rank: list = []
+        self.strings: list[str] = []
+        self.rank: list[int] = []
         self.count: int = 0
 
     def _store(self, string: str) -> None:
@@ -125,7 +125,7 @@ def main() -> None:
     print(f"Trying to validate input 'Hello': {np.validate('Hello')}")
     print("Test invalid ingestion of string 'foo' without prior validation:")
     try:
-        np.validate("foo")
+        np.ingest('foo')
     except DataProcessorError as e:
         print(f"Got exception: {e}")
     dataNums: list[int | float] = [1, 2, 3, 4, 5]
