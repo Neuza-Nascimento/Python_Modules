@@ -14,7 +14,7 @@ class BattleStrategy(ABC):
         pass
 
     @abstractmethod
-    def act(self, creature: Creature):
+    def act(self, creature: Creature) -> list[str]:
         pass
 
 

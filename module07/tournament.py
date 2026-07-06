@@ -12,8 +12,10 @@ def battle(opponents: list[tuple[CreatureFactory, BattleStrategy]]) -> None:
     print(f"{tam} opponents involved\n")
     for j in range(tam):
         for i in range(j + 1, tam):
-            opponent1, strategy1 = opponents[j]
-            opponent2, strategy2 = opponents[i]
+            factory1, strategy1 = opponents[j]
+            factory2, strategy2 = opponents[i]
+            opponent1 = factory1.create_base()
+            opponent2 = factory2.create_base()
             print("\n* Battle *")
             print(opponent1.describe())
             print("  vs.")
@@ -29,10 +31,10 @@ def battle(opponents: list[tuple[CreatureFactory, BattleStrategy]]) -> None:
 
 
 def main() -> None:
-    flame = FlameFactory().create_base()
-    aqua = AquaFactory().create_base()
-    transf = TransformCreatureFactory().create_base()
-    heald = HealingCreatureFactory().create_base()
+    flame = FlameFactory()
+    aqua = AquaFactory()
+    transf = TransformCreatureFactory()
+    heald = HealingCreatureFactory()
 
     normal = NormalStrategy()
     defensive = DefensiveStrategy()
