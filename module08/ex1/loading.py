@@ -46,7 +46,8 @@ def main() -> None:
         print("For pip:")
         print(" 'pip install -r requirements.txt'")
         print("For Proety:")
-        print(" 'for poetry run python loading.py'")
+        print(" poetry install'")
+        print(" poetry run python loading.py'")
 
 
 if __name__ == "__main__":
