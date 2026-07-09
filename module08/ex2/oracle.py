@@ -38,8 +38,10 @@ def main() -> None:
         if os.getenv("MATRIX_MODE") == "development":
             print("[WARNING] Ensure .env is NOT used in production"
                   "- use real environment variables!")
-        else:
+        elif os.getenv("MATRIX_MODE") == "production":
             print("[OK] .env file properly configured")
+        else:
+            print("[WARNING] Variable MATRIX_MODE is not valid")
         print("[OK] Production overrides available")
         print("\nThe Oracle sees all configurations.")
     else:
