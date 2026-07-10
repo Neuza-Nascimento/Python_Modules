@@ -26,15 +26,17 @@ class AlienContactModel(BaseModel):
     is_verified: bool = Field(default=False)
 
     @model_validator(mode="after")
-    def verify_contact(self) -> Self:
+    def validation_regulament(self) -> Self:
         if not self.contact_id.startswith("AC"):
             raise ValueError("The ID requires to start with "
                              "'AC'- Alien Contact")
 
-        if self.contact_type == ContactType.PHYSICAL and self.is_verified == False:
+        if (self.contact_type == ContactType.PHYSICAL
+           and self.is_verified is False):
             raise ValueError("Physical contact reports must be verified")
 
-        if self.contact_type == ContactType.TELEPATHIC and self.witness_count < 3:
+        if (self.contact_type == ContactType.TELEPATHIC
+           and self.witness_count < 3):
             raise ValueError(
                 "Telepathic contact requires at least 3 witnesses")
 
@@ -45,35 +47,53 @@ class AlienContactModel(BaseModel):
         return self
 
 
+def print_alien_contact(alien: AlienContactModel) -> None:
+    print("Valid contact report:")
+    print(f"ID: {alien.contact_id}")
+    print(f"Type: {alien.contact_type}")
+    print(f"Location: {alien.location}")
+    print(f"Signal: {alien.signal_strength}")
+    print(f"Duration: {alien.duration_minutes} minutes")
+    print(f"Witnesses: {alien.witness_count}")
+    if alien.message_received is not None:
+        print(f"Message: '{alien.message_received}'")
+    print("==" * 20)
+
+
 def main() -> None:
     print("Alien Contact Log Validation")
     print("==" * 20)
     try:
         alien1 = AlienContactModel(
-                contact_id= "AC_2024_002",
-                timestamp= datetime(2000, 6, 2, 20, 30, 0),
-                location= "Area 51",
-                contact_type= "radio",
-                signal_strength= 8.5,
-                duration_minutes= 45,
-                witness_count= 5,
-                message_received= None,
-                is_verified= False,
+                contact_id="AC_2024_002",
+                timestamp=datetime(2000, 6, 2, 20, 30, 0),
+                location="Area 51",
+                contact_type=ContactType.RADIO,
+                signal_strength=8.5,
+                duration_minutes=45,
+                witness_count=5,
+                message_received=None,
+                is_verified=False,
         )
+        print_alien_contact(alien1)
+    except ValidationError as e:
+        print("Expected validation error:\n")
+        for error in e.errors():
+            print(error["msg"])
 
-      
+    try:
         alien2 = AlienContactModel(
-                contact_id= "Err_2024_002",
-                timestamp= "2024-01-16T09:15:00",
-                location= "Roswell",
-                contact_type= "telepathic",
-                signal_strength= 6.2,
-                duration_minutes= 30,
-                witness_count= 1,
-                message_received= None,
-                is_verified= False
+                contact_id="AC_2024_002",
+                timestamp=datetime(2005, 12, 25),
+                location="Roswell",
+                contact_type=ContactType.TELEPATHIC,
+                signal_strength=6.2,
+                duration_minutes=30,
+                witness_count=1,
+                message_received=None,
+                is_verified=False
         )
-
+        print_alien_contact(alien2)
     except ValidationError as e:
         print("Expected validation error:\n")
         for error in e.errors():
