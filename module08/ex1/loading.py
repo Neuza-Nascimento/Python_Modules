@@ -23,7 +23,7 @@ def main() -> None:
         import matplotlib.pyplot as plt
         import numpy as np
         import pandas as pd
-        print("Analyzing Matrix data...")
+        print("\nAnalyzing Matrix data...")
         data = np.random.randn(250, 4)
         colunas: list[str] = ["Veronique", "Gabriel", "Felyppe", "Neuza"]
         print("Processing 1000 data points...")
@@ -39,15 +39,15 @@ def main() -> None:
         plt.grid(True, linestyle="--", alpha=0.6)
         plt.legend()
         plt.savefig(" matrix_analysis.png", dpi=100)
-        print("Analysis complete!")
+        print("\nAnalysis complete!")
         print("Results saved to: matrix_analysis.png")
     else:
         print("\nTo install missing dependencies use:")
         print("For pip:")
         print(" 'pip install -r requirements.txt'")
         print("For Proety:")
-        print(" poetry install'")
-        print(" poetry run python loading.py'")
+        print(" 'poetry install'")
+        print(" 'poetry run python loading.py'")
 
 
 if __name__ == "__main__":
